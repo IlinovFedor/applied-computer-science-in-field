@@ -10,6 +10,7 @@ typedef vector<vector<double> > vvd;
 typedef vector<double> vd;
 
 const double EPS = 1e-9;
+const double EPS_ITER = 1e-5;
 
 vd xs;
 vector<bool> isFree;
@@ -132,16 +133,152 @@ vd task1(vvd &matrix) {
     return xs;
 }
 
+double normOct(const vvd &B) {
+    double res = 0;
+    for (int j = 0; j < B.size(); j++) {
+        double colSum = 0;
+        for (int i = 0; i < B.size(); i++)
+            colSum += abs(B[i][j]);
+        res = max(res, colSum);
+    }
+    return res;
+}
+
+double normCub(const vvd &B) {
+    double res = 0;
+    for (int i = 0; i < B.size(); i++) {
+        double rowSum = 0;
+        for (int j = 0; j < B.size(); j++)
+            rowSum += abs(B[i][j]);
+        res = max(res, rowSum);
+    }
+    return res;
+}
+
+bool isDominant(const vvd &m) {
+    int n = m.size();
+    for (int i = 0; i < n; i++) {
+        double off = 0;
+        for (int j = 0; j < n; j++)
+            if (i != j) off += abs(m[i][j]);
+        if (abs(m[i][i]) <= off) return false;
+    }
+    return true;
+}
+
+vvd makeDominant(const vvd &m) {
+    if (isDominant(m)) return m;
+    int n = m.size();
+    vvd res = m;
+
+    for (int i = 0; i < n; i++) {
+        bool found = false;
+        for (int w0 = -1; w0 <= 1 && !found; w0++) {
+            for (int w1 = -1; w1 <= 1 && !found; w1++) {
+                for (int w2 = -1; w2 <= 1 && !found; w2++) {
+                    if (w0 == 0 && w1 == 0 && w2 == 0) continue;
+                    vd row(n + 1, 0);
+                    int w[3] = {w0, w1, w2};
+                    for (int r = 0; r < n; r++)
+                        for (int c = 0; c <= n; c++)
+                            row[c] += w[r] * m[r][c];
+
+                    double off = 0;
+                    for (int j = 0; j < n; j++)
+                        if (i != j) off += abs(row[j]);
+
+                    if (abs(row[i]) > off) {
+                        res[i] = row;
+                        found = true;
+                    }
+                }
+            }
+        }
+    }
+    return res;
+}
+
+vd task2(const vvd &matrix) {
+    int n = matrix.size();
+    cout << "Task 2: Simple Iteration Method\n";
+
+    vvd m = makeDominant(matrix);
+    cout << "Transformed matrix (diagonal dominance):\n";
+    printMatrix(m);
+
+    vvd B(n, vd(n, 0));
+    vd c(n, 0);
+    for (int i = 0; i < n; i++) {
+        c[i] = m[i][n] / m[i][i];
+        for (int j = 0; j < n; j++)
+            if (i != j)
+                B[i][j] = -m[i][j] / m[i][i];
+    }
+
+    cout << "Matrix B:\n";
+    printMatrix(B);
+    cout << "Vector c:\n";
+    for (double val : c) cout << val << ' ';
+    cout << "\n\n";
+
+    double nOct = normOct(B);
+    double nCub = normCub(B);
+    cout << "Octahedral norm ||B||_1   = " << nOct << "\n";
+    cout << "Cubic norm      ||B||_inf = " << nCub << "\n";
+
+    if (nOct < 1.0 || nCub < 1.0) {
+        cout << "Convergence condition satisfied (norm < 1).\n\n";
+    } else {
+        cout << "Convergence condition NOT satisfied.\n\n";
+    }
+
+    vd x_prev = c;
+    vd x_curr(n);
+
+    int step = 0;
+    while (true) {
+        step++;
+        double maxDiff = 0;
+
+        for (int i = 0; i < n; i++) {
+            x_curr[i] = c[i];
+            for (int j = 0; j < n; j++)
+                x_curr[i] += B[i][j] * x_prev[j];
+
+            maxDiff = max(maxDiff, abs(x_curr[i] - x_prev[i]));
+        }
+
+        cout << "Iter " << step << ": ";
+        for (double val : x_curr) cout << val << ' ';
+        cout << "| diff = " << maxDiff << "\n";
+
+        if (maxDiff < EPS_ITER)
+            break;
+
+        x_prev = x_curr;
+    }
+
+    cout << "\nResult task 2:\n";
+    for (double val : x_curr) cout << val << ' ';
+    cout << "\n";
+
+    return x_curr;
+}
 
 int main() {
     auto matrix = readFile("11.in");
     freopen("11.out", "w", stdout);
-    printMatrix(matrix);
-    isFree.assign(matrix.size(), true);
 
-    auto xs = task1(matrix);
-    if (xs.empty()) {
-        cout << "Система несовместна: решений нет\n";
+    cout << "Original matrix\n";
+    printMatrix(matrix);
+
+    cout << "Task 1: Gauss Method\n";
+    auto matrixForTask1 = matrix;
+    isFree.assign(matrixForTask1.size(), true);
+
+    auto xs1 = task1(matrixForTask1);
+    if (xs1.empty()) {
+        cout << "No solutions\n";
         return 0;
     }
 
@@ -149,12 +286,14 @@ int main() {
     for (bool f : isFree)
         infinite = infinite || f;
     if (infinite) {
-        cout << "Бесконечно много решений, свободные переменные:";
-        for (int j = 0; j < isFree.size(); j++)
-            if (isFree[j])
-                cout << " x" << j + 1;
-        cout << "\nЧастное решение (свободные переменные = 0):\n";
+        cout << "Infinite solutions\n";
+    } else {
+        cout << "\nResult task 1:\n";
+        for (double val : xs1) cout << val << ' ';
+        cout << "\n\n";
     }
 
-    for (double xs1 : xs) cout << xs1 << ' ';
+    task2(matrix);
+
+    return 0;
 }
