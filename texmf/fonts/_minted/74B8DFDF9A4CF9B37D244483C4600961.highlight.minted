@@ -1,0 +1,127 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{package}\PYG{+w}{ }\PYG{n+nx}{main}
+
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{p}{(}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}html/template\PYGZdq{}}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}log/slog\PYGZdq{}}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}net/http\PYGZdq{}}
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}os\PYGZdq{}}
+
+\PYG{+w}{	}\PYG{l+s}{\PYGZdq{}github.com/jackc/pgx\PYGZdq{}}
+\PYG{p}{)}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{httpAddress}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}localhost:8080\PYGZdq{}}
+
+\PYG{k+kd}{type}\PYG{+w}{ }\PYG{n+nx}{Response}\PYG{+w}{ }\PYG{k+kd}{struct}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{n+nx}{Type}\PYG{+w}{ }\PYG{k+kt}{string}
+\PYG{+w}{	}\PYG{n+nx}{Rows}\PYG{+w}{ }\PYG{k+kt}{any}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{func}\PYG{+w}{ }\PYG{n+nx}{Root}\PYG{p}{(}\PYG{n+nx}{htmlTemplate}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{template}\PYG{p}{.}\PYG{n+nx}{Template}\PYG{p}{)}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{HandlerFunc}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{k+kd}{func}\PYG{p}{(}\PYG{n+nx}{writer}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{ResponseWriter}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{request}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{Request}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{htmlTemplate}\PYG{p}{.}\PYG{n+nx}{Execute}\PYG{p}{(}\PYG{n+nx}{writer}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{p}{)}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Error}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}cannot execute template\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}err\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{))}
+\PYG{+w}{			}\PYG{n+nx}{writer}\PYG{p}{.}\PYG{n+nx}{WriteHeader}\PYG{p}{(}
+\PYG{+w}{				}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{StatusInternalServerError}\PYG{p}{)}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{func}\PYG{+w}{ }\PYG{n+nx}{Queries}\PYG{p}{(}\PYG{n+nx}{htmlTemplate}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{template}\PYG{p}{.}\PYG{n+nx}{Template}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{pool}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{pgx}\PYG{p}{.}\PYG{n+nx}{ConnPool}\PYG{p}{)}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{HandlerFunc}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{k+kd}{func}\PYG{p}{(}\PYG{n+nx}{writer}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{ResponseWriter}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{request}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{Request}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{opId}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{request}\PYG{p}{.}\PYG{n+nx}{URL}\PYG{p}{.}\PYG{n+nx}{Query}\PYG{p}{().}\PYG{n+nx}{Get}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}opId\PYGZdq{}}\PYG{p}{)}
+\PYG{+w}{		}\PYG{n+nx}{resp}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nb}{new}\PYG{p}{(}\PYG{n+nx}{Response}\PYG{p}{)}
+\PYG{+w}{		}\PYG{k+kd}{var}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{k+kt}{error}
+\PYG{+w}{		}\PYG{k}{switch}\PYG{+w}{ }\PYG{n+nx}{opId}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{case}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}1\PYGZdq{}}\PYG{p}{:}
+\PYG{+w}{			}\PYG{n+nx}{resp}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{execQuery}\PYG{p}{(}
+\PYG{+w}{				}\PYG{n+nx}{pool}\PYG{p}{,}
+\PYG{+w}{				}\PYG{l+s}{\PYGZdq{}SELECT last\PYGZus{}name, first\PYGZus{}name, middle\PYGZus{}name, phone\PYGZus{}number, salary FROM lab2\PYGZus{}employee\PYGZus{}ilinov ORDER BY last\PYGZus{}name, middle\PYGZus{}name, first\PYGZus{}name;\PYGZdq{}}\PYG{p}{)}
+\PYG{+w}{		}\PYG{k}{case}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}2\PYGZdq{}}\PYG{p}{:}
+\PYG{+w}{			}\PYG{n+nx}{resp}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{execQuery}\PYG{p}{(}
+\PYG{+w}{				}\PYG{n+nx}{pool}\PYG{p}{,}
+\PYG{+w}{				}\PYG{l+s}{\PYGZdq{}SELECT last\PYGZus{}name, first\PYGZus{}name, middle\PYGZus{}name, address FROM lab2\PYGZus{}employee\PYGZus{}ilinov ORDER BY address, last\PYGZus{}name, middle\PYGZus{}name, first\PYGZus{}name;\PYGZdq{}}\PYG{p}{)}
+\PYG{+w}{		}\PYG{k}{case}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}3\PYGZdq{}}\PYG{p}{:}
+\PYG{+w}{			}\PYG{n+nx}{resp}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{execQuery}\PYG{p}{(}
+\PYG{+w}{				}\PYG{n+nx}{pool}\PYG{p}{,}
+\PYG{+w}{				}\PYG{l+s}{\PYGZdq{}SELECT last\PYGZus{}name, first\PYGZus{}name, middle\PYGZus{}name, to\PYGZus{}char(date\PYGZus{}start, \PYGZsq{}DD.MM.YYYY\PYGZsq{}) FROM lab2\PYGZus{}employee\PYGZus{}ilinov WHERE extract(days from now() \PYGZhy{} date\PYGZus{}start) / 365 \PYGZgt{} 4 ORDER BY last\PYGZus{}name, middle\PYGZus{}name, first\PYGZus{}name;\PYGZdq{}}\PYG{p}{)}
+\PYG{+w}{		}\PYG{k}{default}\PYG{p}{:}
+\PYG{+w}{			}\PYG{n+nx}{writer}\PYG{p}{.}\PYG{n+nx}{WriteHeader}\PYG{p}{(}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{StatusBadRequest}\PYG{p}{)}
+\PYG{+w}{			}\PYG{k}{return}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Error}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}cannot get query\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}error\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{),}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}queryId\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{opId}\PYG{p}{))}
+\PYG{+w}{			}\PYG{n+nx}{writer}\PYG{p}{.}\PYG{n+nx}{WriteHeader}\PYG{p}{(}
+\PYG{+w}{				}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{StatusInternalServerError}\PYG{p}{)}
+\PYG{+w}{			}\PYG{k}{return}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{n+nx}{resp}\PYG{p}{.}\PYG{n+nx}{Type}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{opId}
+
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{htmlTemplate}\PYG{p}{.}\PYG{n+nx}{Execute}\PYG{p}{(}\PYG{n+nx}{writer}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{resp}\PYG{p}{);}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Error}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}cannot execute template\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}err\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{))}
+\PYG{+w}{			}\PYG{n+nx}{writer}\PYG{p}{.}\PYG{n+nx}{WriteHeader}\PYG{p}{(}
+\PYG{+w}{				}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{StatusInternalServerError}\PYG{p}{)}
+\PYG{+w}{			}\PYG{k}{return}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{func}\PYG{+w}{ }\PYG{n+nx}{execQuery}\PYG{p}{(}\PYG{n+nx}{pool}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{pgx}\PYG{p}{.}\PYG{n+nx}{ConnPool}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{query}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{*}\PYG{n+nx}{Response}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{error}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{n+nx}{rows}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{pool}\PYG{p}{.}\PYG{n+nx}{Query}\PYG{p}{(}\PYG{n+nx}{query}\PYG{p}{)}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{defer}\PYG{+w}{ }\PYG{n+nx}{rows}\PYG{p}{.}\PYG{n+nx}{Close}\PYG{p}{()}
+
+\PYG{+w}{	}\PYG{n+nx}{result}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nb}{make}\PYG{p}{([]}\PYG{k+kt}{any}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}
+\PYG{+w}{	}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nx}{rows}\PYG{p}{.}\PYG{n+nx}{Next}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{row}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{rows}\PYG{p}{.}\PYG{n+nx}{Values}\PYG{p}{()}
+\PYG{+w}{		}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k}{return}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{n+nx}{result}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nb}{append}\PYG{p}{(}\PYG{n+nx}{result}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{row}\PYG{p}{)}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{rows}\PYG{p}{.}\PYG{n+nx}{Err}\PYG{p}{();}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{n+nx}{resp}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nb}{new}\PYG{p}{(}\PYG{n+nx}{Response}\PYG{p}{)}
+\PYG{+w}{	}\PYG{n+nx}{resp}\PYG{p}{.}\PYG{n+nx}{Rows}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{result}
+\PYG{+w}{	}\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{resp}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kc}{nil}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{func}\PYG{+w}{ }\PYG{n+nx}{main}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{n+nx}{cssFS}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{FileServer}\PYG{p}{(}\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{Dir}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}../css\PYGZdq{}}\PYG{p}{))}
+\PYG{+w}{	}\PYG{n+nx}{htmlTemplate}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{template}\PYG{p}{.}\PYG{n+nx}{ParseFiles}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}index.html\PYGZdq{}}\PYG{p}{)}
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Error}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}cannot parse index.html\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}err\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{))}
+\PYG{+w}{		}\PYG{n+nx}{os}\PYG{p}{.}\PYG{n+nx}{Exit}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{n+nx}{pool}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{pgx}\PYG{p}{.}\PYG{n+nx}{NewConnPool}\PYG{p}{(}\PYG{n+nx}{pgx}\PYG{p}{.}\PYG{n+nx}{ConnPoolConfig}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{Host}\PYG{p}{:}\PYG{+w}{     }\PYG{l+s}{\PYGZdq{}localhost\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{		}\PYG{n+nx}{Port}\PYG{p}{:}\PYG{+w}{     }\PYG{l+m+mi}{5432}\PYG{p}{,}
+\PYG{+w}{		}\PYG{n+nx}{Database}\PYG{p}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}postgres\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{		}\PYG{n+nx}{User}\PYG{p}{:}\PYG{+w}{     }\PYG{l+s}{\PYGZdq{}postgres\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{		}\PYG{n+nx}{Password}\PYG{p}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}password\PYGZdq{}}\PYG{p}{,}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{})}
+
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Error}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}cannot connect to postgres\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}err\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{))}
+\PYG{+w}{		}\PYG{n+nx}{os}\PYG{p}{.}\PYG{n+nx}{Exit}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{n+nx}{mux}\PYG{+w}{ }\PYG{o}{:=}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{NewServeMux}\PYG{p}{()}
+\PYG{+w}{	}\PYG{n+nx}{mux}\PYG{p}{.}\PYG{n+nx}{Handle}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}GET /\PYGZob{}\PYGZdl{}\PYGZcb{}\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{Root}\PYG{p}{(}\PYG{n+nx}{htmlTemplate}\PYG{p}{))}
+\PYG{+w}{	}\PYG{n+nx}{mux}\PYG{p}{.}\PYG{n+nx}{Handle}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}GET /css/\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{StripPrefix}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}/css/\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{cssFS}\PYG{p}{))}
+\PYG{+w}{	}\PYG{n+nx}{mux}\PYG{p}{.}\PYG{n+nx}{Handle}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}GET /query\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{Queries}\PYG{p}{(}\PYG{n+nx}{htmlTemplate}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{pool}\PYG{p}{))}
+
+\PYG{+w}{	}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Info}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}starting server\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}address\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{httpAddress}\PYG{p}{))}
+
+\PYG{+w}{	}\PYG{k}{if}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{ListenAndServe}\PYG{p}{(}\PYG{n+nx}{httpAddress}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{mux}\PYG{p}{);}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{nil}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Error}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}cannot listen server\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}err\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{),}\PYG{+w}{ }\PYG{n+nx}{slog}\PYG{p}{.}\PYG{n+nx}{Any}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}address\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{httpAddress}\PYG{p}{))}
+\PYG{+w}{		}\PYG{n+nx}{os}\PYG{p}{.}\PYG{n+nx}{Exit}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

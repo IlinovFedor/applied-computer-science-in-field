@@ -1,0 +1,6 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{SELECT}\PYG{+w}{ }\PYG{n}{last\PYGZus{}name}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{first\PYGZus{}name}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{middle\PYGZus{}name}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{to\PYGZus{}char}\PYG{p}{(}\PYG{n}{date\PYGZus{}start}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}DD.MM.YYYY\PYGZsq{}}\PYG{p}{)}
+\PYG{k}{FROM}\PYG{+w}{ }\PYG{n}{lab2\PYGZus{}employee\PYGZus{}ilinov}
+\PYG{k}{WHERE}\PYG{+w}{ }\PYG{k}{extract}\PYG{p}{(}\PYG{n}{days}\PYG{+w}{ }\PYG{k}{from}\PYG{+w}{ }\PYG{n}{now}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{date\PYGZus{}start}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{l+m+mi}{365}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{4}
+\PYG{k}{ORDER}\PYG{+w}{ }\PYG{k}{BY}\PYG{+w}{ }\PYG{n}{last\PYGZus{}name}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{middle\PYGZus{}name}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{first\PYGZus{}name}\PYG{p}{;}
+\end{MintedVerbatim}
