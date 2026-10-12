@@ -1,0 +1,46 @@
+%% Преамбула TeX-файла
+
+% 1. Стиль и язык
+\documentclass{G7-32} % Стиль (по умолчанию размер шрифта 14pt)
+
+% Остальные стандартные настройки убраны в preamble.inc.tex.
+\input{preamble.inc}
+
+% Настройки листингов.
+\ifPDFTeX
+\input{listings.inc}
+\else
+\usepackage{local-minted}
+\fi
+
+% Полезные макросы листингов.
+\input{macros.inc}
+
+% Стиль титульного листа и заголовки
+\usepackage{title-shvarts}
+
+% --- Заполняем данные для титульника ---
+\LabNumber{1} % Номер лабораторной
+\LabTopic{Методы решения систем линейных алгебраических уравнений} % Тема работы
+\LabStudent{РИС-25-2б}{Ильинов Ф. М.} % Группа и ФИО студента
+\LabTeacher{профессор кафедры ИТАС}{Шварц К. Г.}
+\LabDiscipline{Информатика в приложении к отрасли}
+
+\begin{document}
+
+\begin{titlepage}
+\end{titlepage}
+
+\frontmatter % выключает нумерацию ВСЕГО; здесь начинаются ненумерованные главы
+
+\tableofcontents
+
+\mainmatter % включает нумерацию глав и секций в документе ниже
+
+\include{10-formulation}
+\include{20-methods}
+\include{30-data}
+\include{40-results}
+\include{50-discussion}
+
+\end{document}

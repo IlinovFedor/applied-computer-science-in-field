@@ -1,1 +1,23 @@
 .idea
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.toc
+*.out
+*.blg
+*.bbl
+*.nlo
+*.nls
+*.ilg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+_minted*
+
+# Binaries and IDE build outputs
+lab01/main
+out/
