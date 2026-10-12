@@ -3,14 +3,16 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
-#include <float.h>
 
 using namespace std;
 
 typedef vector<vector<double> > vvd;
 typedef vector<double> vd;
 
+const double EPS = 1e-9;
+
 vd xs;
+vector<bool> isFree;
 
 vvd readFile(const char *fileName) {
     freopen(fileName, "r", stdin);
@@ -41,20 +43,24 @@ void printMatrix(const vvd &matrix) {
     cout << '\n';
 }
 
-void findMajor(const vvd &matrix,
+bool findMajor(const vvd &matrix,
                int &majorRow,
                int &majorCol,
                double &majorVal) {
-    majorVal = DBL_MIN;
+    majorVal = 0;
+    bool found = false;
 
     for (int i = 0; i < matrix.size(); i++)
         for (int j = 0; j < matrix.size(); j++)
-            if (matrix[i][j] != 0 &&
+            if (abs(matrix[i][j]) > EPS &&
                 abs(majorVal) < abs(matrix[i][j])) {
                 majorVal = matrix[i][j];
                 majorRow = i;
                 majorCol = j;
+                found = true;
             }
+
+    return found;
 }
 
 void sumRows(vvd &matrix,
@@ -93,13 +99,17 @@ void deleteMajor(vvd &matrix,
 vd task1(vvd &matrix) {
     static int step = 1;
     const int n = matrix.size();
-    if (step == n + 1)
-        return vd(n, 0);
-    cout << "Step: " << step++ << '\n';
 
     int majorRow, majorCol;
     double majorVal;
-    findMajor(matrix, majorRow, majorCol, majorVal);
+    if (!findMajor(matrix, majorRow, majorCol, majorVal)) {
+        for (const auto &row: matrix)
+            if (abs(row[n]) > EPS)
+                return vd();
+        return vd(n, 0);
+    }
+    cout << "Step: " << step++ << '\n';
+    isFree[majorCol] = false;
 
     sumRows(matrix, majorRow, majorCol, majorVal);
     printMatrix(matrix);
@@ -110,12 +120,14 @@ vd task1(vvd &matrix) {
     printMatrix(nextMatrix);
 
     auto xs = task1(nextMatrix);
+    if (xs.empty())
+        return xs;
 
-    double rest = matrix[majorRow][n];
+    double free = matrix[majorRow][n];
     for (int j = 0; j < n; j++)
         if (j != majorCol)
-            rest -= matrix[majorRow][j] * xs[j];
-    xs[majorCol] = rest / majorVal;
+            free -= matrix[majorRow][j] * xs[j];
+    xs[majorCol] = free / majorVal;
 
     return xs;
 }
@@ -125,7 +137,24 @@ int main() {
     auto matrix = readFile("11.in");
     freopen("11.out", "w", stdout);
     printMatrix(matrix);
+    isFree.assign(matrix.size(), true);
 
     auto xs = task1(matrix);
+    if (xs.empty()) {
+        cout << "Система несовместна: решений нет\n";
+        return 0;
+    }
+
+    bool infinite = false;
+    for (bool f : isFree)
+        infinite = infinite || f;
+    if (infinite) {
+        cout << "Бесконечно много решений, свободные переменные:";
+        for (int j = 0; j < isFree.size(); j++)
+            if (isFree[j])
+                cout << " x" << j + 1;
+        cout << "\nЧастное решение (свободные переменные = 0):\n";
+    }
+
     for (double xs1 : xs) cout << xs1 << ' ';
 }
