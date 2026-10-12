@@ -48,7 +48,7 @@
 % ---------- размеры (из Word) --------------------------------------
 \newlength{\Lab@lh}      \setlength{\Lab@lh}{24.13pt}      % строка 14 пт x 1,5
 \newlength{\Lab@lhL}     \setlength{\Lab@lhL}{27.6pt}      % строка 16 пт x 1,5
-\newlength{\Lab@indent}  \setlength{\Lab@indent}{8.5cm}    % отступ блока "Выполнил/Проверил" (4820 twips)
+\newlength{\Lab@indent}  \setlength{\Lab@indent}{7.5cm}    % отступ блока "Выполнил/Проверил"
 \newlength{\Lab@tmp}
 
 % ---------- вспомогательные макросы --------------------------------
@@ -99,7 +99,7 @@
     \Lab@center{\Lab@University}%
     \Lab@center{\Lab@Faculty}%
     \Lab@center{\Lab@Department}%
-    \vspace{5\Lab@lh}%
+    \vspace{2.5\Lab@lh}%
     % --- дисциплина и номер работы (16 пт) ---
     {\fontsize{16pt}{\Lab@lhL}\selectfont
     \Lab@center{\Lab@Discipline}%
@@ -107,15 +107,22 @@
     \vspace{\Lab@lh}%
     % --- тема ---
     \Lab@center{\Lab@topicline}%
-    \vspace{2\Lab@lh}%
-    % --- исполнитель и проверяющий (блок с отступом 8,5 см) ---
+    \vspace{1.5\Lab@lh}%
+    % --- исполнитель и проверяющий (блок с отступом) ---
     \noindent\hspace*{\Lab@indent}%
     \parbox[t]{\dimexpr\linewidth-\Lab@indent\relax}{%
         \setlength{\parindent}{0pt}\raggedright
-        Выполнил: студент группы~\Lab@ulfill{\Lab@Group}\par
-        \Lab@ulfill{\Lab@StudentName}\par
-        Проверил: \Lab@TeacherPost\par
-        \Lab@TeacherName\par}\par
+        Выполнил:\par
+        студент группы~\Lab@Group\par
+        \vspace{0.8ex}%
+        \underline{\hspace{2.5cm}}~/~\Lab@StudentName\par
+        \vspace{2ex}%
+        Проверил:\par
+        \Lab@TeacherPost\par
+        \vspace{0.8ex}%
+        \underline{\hspace{2.5cm}}~/~\Lab@TeacherName\par
+        \vspace{2.5ex}%
+        «\underline{\hspace{0.8cm}}»~\underline{\hspace{2.2cm}}~\Lab@Year~г.\par}\par
     % --- город и год внизу страницы ---
     \vfill
     \Lab@center{г.~\Lab@Town~\textendash~\Lab@Year}%
