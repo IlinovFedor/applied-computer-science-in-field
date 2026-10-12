@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <climits>
+#include <cmath>
 #include <float.h>
 
 using namespace std;
@@ -90,23 +90,42 @@ void deleteMajor(vvd &matrix,
     matrix = newMatrix;
 }
 
+vd task1(vvd &matrix) {
+    static int step = 1;
+    const int n = matrix.size();
+    if (step == n + 1)
+        return vd(n, 0);
+    cout << "Step: " << step++ << '\n';
 
-int main() {
-    auto matrix = readFile("input");
+    int majorRow, majorCol;
+    double majorVal;
+    findMajor(matrix, majorRow, majorCol, majorVal);
+
+    sumRows(matrix, majorRow, majorCol, majorVal);
     printMatrix(matrix);
 
-    int n = 2;
-    while (n) {
-        n--;
-        cout << n << '\n';
-        int majorRow, majorCol;
-        double majorVal;
-        findMajor(matrix, majorRow, majorCol, majorVal);
+    vvd nextMatrix(matrix);
 
-        sumRows(matrix, majorRow, majorCol, majorVal);
-        printMatrix(matrix);
+    deleteMajor(nextMatrix, majorRow, majorCol);
+    printMatrix(nextMatrix);
 
-        deleteMajor(matrix, majorRow, majorCol);
-        printMatrix(matrix);
-    }
+    auto xs = task1(nextMatrix);
+
+    double rest = matrix[majorRow][n];
+    for (int j = 0; j < n; j++)
+        if (j != majorCol)
+            rest -= matrix[majorRow][j] * xs[j];
+    xs[majorCol] = rest / majorVal;
+
+    return xs;
+}
+
+
+int main() {
+    auto matrix = readFile("11.in");
+    freopen("11.out", "w", stdout);
+    printMatrix(matrix);
+
+    auto xs = task1(matrix);
+    for (double xs1 : xs) cout << xs1 << ' ';
 }
